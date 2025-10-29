@@ -8,6 +8,8 @@ import Home from './routes/Home'
 import Projects from './components/Projects'
 import About from './components/About'
 import Contact from './components/Contact'
+import Manifesto from './components/Manifesto'
+import SignatureFooter from './components/SignatureFooter'
 import PageTransition from './components/PageTransition'
 import { initScrollAnimations } from './utils/smoothScroll'
 
@@ -163,11 +165,11 @@ function App() {
   }, [])
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ backgroundColor: '#0a0a0f' }}>
+    <div className="relative min-h-screen overflow-hidden bg-midnight-900">
       {/* ============================================ */}
-      {/* � IMMERSIVE 3D STAR BACKGROUND */}
+      {/* 🌟 IMMERSIVE 3D STAR BACKGROUND */}
       {/* ============================================ */}
-      <Suspense fallback={<div className="fixed inset-0 bg-gray-950" />}>
+      <Suspense fallback={<div className="fixed inset-0 bg-midnight-950" />}>
         <Background showStars={true} showParticles={true} />
       </Suspense>
 
@@ -205,16 +207,22 @@ function App() {
       </div>
 
       {/* ============================================ */}
-      {/* 🎭 EDGE GLOW EFFECTS */}
+      {/* 🎭 BRAND EDGE GLOW EFFECTS */}
       {/* ============================================ */}
       <div className="fixed inset-0 z-[6] pointer-events-none">
-        {/* Top edge glow */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+        {/* Top edge glow - teal/violet brand colors */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
         
-        {/* Subtle corner accents */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
+        {/* Subtle corner accents - brand colors */}
+        <div className="absolute top-0 left-0 w-80 h-80 bg-gradient-to-br from-teal-500/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-violet-500/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-t from-teal-500/5 to-transparent rounded-full blur-3xl"></div>
       </div>
+
+      {/* ============================================ */}
+      {/* 📜 HANDCRAFTED SIGNATURE FOOTER */}
+      {/* ============================================ */}
+      <SignatureFooter />
     </div>
   )
 }

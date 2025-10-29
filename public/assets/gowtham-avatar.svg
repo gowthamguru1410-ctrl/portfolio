@@ -1,0 +1,44 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f1a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#15152a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a35;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00e6c8;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#00e6c8;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="200" fill="url(#bgGradient)"/>
+  
+  <!-- Accent circles -->
+  <circle cx="100" cy="100" r="80" fill="#00e6c8" opacity="0.1"/>
+  <circle cx="320" cy="280" r="60" fill="#8b5cf6" opacity="0.15"/>
+  
+  <!-- Developer icon -->
+  <g transform="translate(200, 200)">
+    <!-- Monitor/Code -->
+    <rect x="-60" y="-40" width="120" height="80" rx="4" fill="#1a1a35" stroke="url(#glowGradient)" stroke-width="2"/>
+    <line x1="-45" y1="-25" x2="-15" y2="-25" stroke="#00e6c8" stroke-width="2"/>
+    <line x1="-45" y1="-10" x2="15" y2="-10" stroke="#8b5cf6" stroke-width="2"/>
+    <line x1="-45" y1="5" x2="-5" y2="5" stroke="#00e6c8" stroke-width="2"/>
+    <line x1="-45" y1="20" x2="35" y2="20" stroke="#8b5cf6" stroke-width="2"/>
+    
+    <!-- Monitor stand -->
+    <rect x="-15" y="40" width="30" height="4" fill="#8b5cf6"/>
+    <rect x="-30" y="44" width="60" height="3" fill="#00e6c8"/>
+  </g>
+  
+  <!-- Text label -->
+  <text x="200" y="350" font-family="Syne, sans-serif" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">
+    Gowtham
+  </text>
+  <text x="200" y="375" font-family="Inter, sans-serif" font-size="14" fill="#00e6c8" text-anchor="middle" letter-spacing="2">
+    SOFTWARE DEVELOPER
+  </text>
+</svg>

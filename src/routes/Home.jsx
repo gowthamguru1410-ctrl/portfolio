@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger, fadeInUp, stagger } from '../lib/gsap'
 import { usePrefersReducedMotion } from '../utils/usePrefersReducedMotion'
-import Hero from '../components/Hero' // Using the new 3D Hero
+import Hero from '../components/Hero' // Using the new cinematic Hero
+import Manifesto from '../components/Manifesto' // Personal philosophy section
 import About from '../components/About'
 import Projects from '../components/Projects'
 import Contact from '../components/Contact'
@@ -53,6 +54,7 @@ export default function Home() {
   return (
     <main>
       <Hero />
+      <Manifesto />
       <div ref={aboutRef}>
         <About />
       </div>
