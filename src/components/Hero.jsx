@@ -2,22 +2,24 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap } from '../lib/gsap';
 import { usePrefersReducedMotion } from '../utils/usePrefersReducedMotion';
 import { useLenis } from '../lib/lenis';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { TypeAnimation } from 'react-type-animation';
 import MagneticButton from './MagneticButton';
 
 export default function Hero() {
   const heroRef = useRef();
-  const nameRef = useRef();
-  const titleRef = useRef();
+  const nameCharsRef = useRef([]);
   const avatarRef = useRef();
   const ctaRef = useRef();
-  const particlesRef = useRef([]);
+  const cursorRef = useRef();
   const prefersReducedMotion = usePrefersReducedMotion();
   const { scrollTo } = useLenis();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  // Mouse parallax with smooth tracking
+  // Custom cursor follow
   useEffect(() => {
     if (prefersReducedMotion) return;
 
@@ -25,72 +27,69 @@ export default function Hero() {
       const x = (e.clientX / window.innerWidth - 0.5) * 2;
       const y = (e.clientY / window.innerHeight - 0.5) * 2;
       setMousePosition({ x, y });
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+
+      // Custom cursor
+      if (cursorRef.current) {
+        gsap.to(cursorRef.current, {
+          x: e.clientX,
+          y: e.clientY,
+          duration: 0.3,
+          ease: 'power2.out',
+        });
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, mouseX, mouseY]);
 
-  // Master timeline - cinematic entrance
+  // Master GSAP Timeline
   useEffect(() => {
     if (prefersReducedMotion) return;
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.2 });
+      const tl = gsap.timeline({ delay: 0.3 });
 
-      // Name reveal with custom easing
-      tl.fromTo(
-        nameRef.current,
-        {
-          opacity: 0,
-          y: 80,
-          scale: 0.9,
-          rotateX: -15,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          rotateX: 0,
-          duration: 1.6,
-          ease: 'power4.out',
-        }
-      );
+      // Name characters stagger reveal
+      if (nameCharsRef.current.length > 0) {
+        tl.fromTo(
+          nameCharsRef.current,
+          {
+            opacity: 0,
+            y: 100,
+            rotateX: -90,
+            scale: 0.5,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            scale: 1,
+            duration: 0.8,
+            stagger: 0.05,
+            ease: 'back.out(2)',
+          }
+        );
+      }
 
-      // Title stagger in
-      tl.fromTo(
-        titleRef.current,
-        {
-          opacity: 0,
-          y: 60,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1.2,
-          ease: 'circ.out',
-        },
-        '-=1'
-      );
-
-      // Avatar slide + fade
+      // Avatar entrance with glow
       tl.fromTo(
         avatarRef.current,
         {
           opacity: 0,
-          x: 100,
-          scale: 0.8,
-          rotate: 5,
+          scale: 0.5,
+          rotate: -10,
         },
         {
           opacity: 1,
-          x: 0,
           scale: 1,
           rotate: 0,
-          duration: 1.4,
-          ease: 'expo.out',
+          duration: 1.2,
+          ease: 'elastic.out(1, 0.6)',
         },
-        '-=0.8'
+        '-=0.4'
       );
 
       // CTA buttons
@@ -98,25 +97,34 @@ export default function Hero() {
         ctaRef.current,
         {
           opacity: 0,
-          y: 30,
+          y: 40,
         },
         {
           opacity: 1,
           y: 0,
           duration: 1,
-          ease: 'back.out(1.4)',
+          ease: 'power3.out',
         },
         '-=0.6'
       );
 
-      // Avatar floating loop
+      // Avatar floating animation
       gsap.to(avatarRef.current, {
-        y: -20,
+        y: -15,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: 1.5,
+      });
+
+      // Avatar subtle rotation
+      gsap.to(avatarRef.current, {
+        rotateZ: 3,
         duration: 4,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut',
-        delay: 1.8,
       });
     }, heroRef);
 
@@ -129,70 +137,92 @@ export default function Hero() {
     }
   };
 
+  const nameText = "Gowtham";
+
   return (
     <section
       ref={heroRef}
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-midnight-900"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+      }}
     >
-      {/* Cinematic gradient background */}
-      <div className="absolute inset-0 bg-cinematic" />
-      
-      {/* Animated gradient orbs with parallax */}
+      {/* Custom animated cursor */}
+      <div
+        ref={cursorRef}
+        className="fixed w-6 h-6 pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 230, 200, 0.8) 0%, rgba(139, 92, 246, 0.4) 100%)',
+          borderRadius: '50%',
+          filter: 'blur(2px)',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+
+      {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-teal-500/20 blur-[140px]"
+          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full opacity-30"
           style={{
-            transform: `translate(${mousePosition.x * 40}px, ${mousePosition.y * 40}px)`,
+            background: 'radial-gradient(circle, rgba(0, 230, 200, 0.4) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            transform: `translate(${mousePosition.x * 50}px, ${mousePosition.y * 50}px)`,
           }}
           transition={{ type: 'spring', stiffness: 50, damping: 20 }}
         />
         <motion.div
-          className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] rounded-full bg-violet-500/15 blur-[120px]"
+          className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] rounded-full opacity-25"
           style={{
-            transform: `translate(${mousePosition.x * -30}px, ${mousePosition.y * -30}px)`,
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)',
+            filter: 'blur(100px)',
+            transform: `translate(${mousePosition.x * -40}px, ${mousePosition.y * -40}px)`,
           }}
           transition={{ type: 'spring', stiffness: 50, damping: 20 }}
         />
       </div>
 
-      {/* Floating particles */}
+      {/* Light particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
-            ref={(el) => (particlesRef.current[i] = el)}
-            className="absolute w-1 h-1 bg-teal-400/40 rounded-full"
+            className="absolute w-1 h-1 bg-teal-400/60 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -120, 0],
-              opacity: [0.2, 0.8, 0.2],
-              scale: [1, 1.5, 1],
+              y: [0, -150, 0],
+              opacity: [0.2, 1, 0.2],
+              scale: [0.5, 1.5, 0.5],
             }}
             transition={{
-              duration: 8 + i * 1.5,
+              duration: 6 + i * 0.5,
               repeat: Infinity,
-              delay: i * 0.4,
+              delay: i * 0.3,
               ease: 'easeInOut',
             }}
           />
         ))}
       </div>
 
-      {/* Main content grid */}
+      {/* Main content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-20 grid lg:grid-cols-2 gap-16 items-center">
         
         {/* Left: Text content */}
         <div className="space-y-8 text-center lg:text-left">
           {/* Availability badge */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/30 backdrop-blur-sm"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md"
+            style={{
+              background: 'rgba(0, 230, 200, 0.1)',
+              border: '1px solid rgba(0, 230, 200, 0.3)',
+              boxShadow: '0 0 20px rgba(0, 230, 200, 0.2)',
+            }}
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
@@ -203,56 +233,82 @@ export default function Hero() {
             </span>
           </motion.div>
 
-          {/* Name - Personal logo */}
-          <div className="space-y-4 perspective-1000">
-            <h1
-              ref={nameRef}
-              className="font-brand font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none tracking-tighter opacity-0"
-              style={{
-                background: 'linear-gradient(135deg, #ffffff 0%, #00e6c8 40%, #8b5cf6 80%, #ffffff 100%)',
-                backgroundSize: '200% 200%',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'gradient-x 8s ease infinite',
-                letterSpacing: '-0.05em',
-                textShadow: '0 0 80px rgba(0, 230, 200, 0.3)',
-              }}
-            >
-              Gowtham
+          {/* Name with letter-by-letter animation */}
+          <div className="space-y-4">
+            <h1 className="font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none tracking-tighter perspective-1000">
+              {nameText.split('').map((char, index) => (
+                <span
+                  key={index}
+                  ref={(el) => (nameCharsRef.current[index] = el)}
+                  className="inline-block opacity-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #00e6c8 0%, #8b5cf6 50%, #ff6b9d 100%)',
+                    backgroundSize: '200% 200%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'gradient-shift 3s ease infinite',
+                    textShadow: '0 0 60px rgba(0, 230, 200, 0.5)',
+                    fontFamily: 'Inter, Poppins, sans-serif',
+                    letterSpacing: '-0.05em',
+                    transformStyle: 'preserve-3d',
+                  }}
+                >
+                  {char}
+                </span>
+              ))}
             </h1>
 
-            {/* Title/role */}
-            <h2
-              ref={titleRef}
-              className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-300 tracking-wide opacity-0"
-              style={{
-                letterSpacing: '0.1em',
-              }}
-            >
-              SOFTWARE{' '}
-              <span className="text-teal-400 font-bold">DEVELOPER</span>
-            </h2>
+            {/* Typewriter subtitle */}
+            <div className="min-h-[60px]">
+              <TypeAnimation
+                sequence={[
+                  'SOFTWARE DEVELOPER',
+                  2000,
+                  'CREATIVE CODER',
+                  2000,
+                  'FRONTEND ENGINEER',
+                  2000,
+                  'FULL STACK DEVELOPER',
+                  2000,
+                ]}
+                wrapper="h2"
+                speed={50}
+                className="font-bold text-2xl sm:text-3xl md:text-4xl tracking-[0.2em]"
+                style={{
+                  color: '#00e6c8',
+                  textShadow: '0 0 30px rgba(0, 230, 200, 0.6)',
+                  fontFamily: 'Space Grotesk, Inter, sans-serif',
+                }}
+                repeat={Infinity}
+              />
+            </div>
           </div>
 
           {/* Description */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.2, delay: 1.2 }}
-            className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-xl mx-auto lg:mx-0 font-light"
+            transition={{ duration: 1.2, delay: 1.5 }}
+            className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-xl mx-auto lg:mx-0 font-light"
           >
             Crafting digital experiences with{' '}
             <span className="text-teal-400 font-semibold">4+ years</span> of expertise.
             <br />
-            Full-stack engineer. Creative problem solver. Pixel perfectionist.
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-violet-400">
+              Full-stack engineer. Creative problem solver. Pixel perfectionist.
+            </span>
           </motion.p>
 
           {/* CTA Buttons */}
           <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 pt-6">
             <MagneticButton
               onClick={() => scrollToSection('#projects')}
-              className="group relative px-8 py-4 bg-brand-gradient rounded-full font-semibold text-white shadow-brand-glow hover:shadow-teal-glow transition-all duration-500 ease-cinematic overflow-hidden"
+              className="group relative px-8 py-4 rounded-full font-semibold text-white overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #00e6c8 0%, #8b5cf6 100%)',
+                boxShadow: '0 0 30px rgba(0, 230, 200, 0.4), 0 0 60px rgba(139, 92, 246, 0.2)',
+              }}
               strength={0.5}
             >
               <span className="relative z-10 flex items-center gap-2">
@@ -261,12 +317,16 @@ export default function Hero() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-teal-400 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </MagneticButton>
 
             <MagneticButton
               onClick={() => scrollToSection('#contact')}
-              className="group px-8 py-4 bg-transparent border-2 border-teal-500/50 rounded-full font-semibold text-teal-300 hover:bg-teal-500/10 hover:border-teal-400 transition-all duration-500 ease-elegant"
+              className="group px-8 py-4 rounded-full font-semibold text-teal-300 backdrop-blur-md transition-all duration-500"
+              style={{
+                background: 'rgba(0, 230, 200, 0.05)',
+                border: '2px solid rgba(0, 230, 200, 0.5)',
+              }}
               strength={0.5}
             >
               <span className="flex items-center gap-2">
@@ -278,18 +338,18 @@ export default function Hero() {
             </MagneticButton>
           </div>
 
-          {/* Social links - minimal */}
+          {/* Social icons */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.6 }}
+            transition={{ duration: 1, delay: 2 }}
             className="flex items-center gap-6 justify-center lg:justify-start pt-4"
           >
             <a
               href="https://github.com/gowthamguru1410-ctrl"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-violet-400 transition-colors duration-300"
+              className="text-gray-400 hover:text-teal-400 transition-all duration-300 hover:scale-110"
               aria-label="GitHub"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -300,7 +360,7 @@ export default function Hero() {
               href="https://linkedin.com/in/gowtham"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-teal-400 transition-colors duration-300"
+              className="text-gray-400 hover:text-teal-400 transition-all duration-300 hover:scale-110"
               aria-label="LinkedIn"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -309,7 +369,7 @@ export default function Hero() {
             </a>
             <a
               href="mailto:your.email@gmail.com"
-              className="text-gray-500 hover:text-teal-400 transition-colors duration-300"
+              className="text-gray-400 hover:text-teal-400 transition-all duration-300 hover:scale-110"
               aria-label="Email"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -319,74 +379,117 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* Right: Avatar with depth */}
+        {/* Right: Premium avatar with effects */}
         <div className="flex items-center justify-center lg:justify-end">
           <div className="relative">
-            {/* Glow backdrop */}
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/30 to-violet-500/30 rounded-full blur-[80px] scale-125" />
+            {/* Glowing backdrop */}
+            <div
+              className="absolute inset-0 rounded-full opacity-60 animate-pulse"
+              style={{
+                background: 'radial-gradient(circle, rgba(0, 230, 200, 0.4) 0%, rgba(139, 92, 246, 0.3) 50%, transparent 70%)',
+                filter: 'blur(60px)',
+                transform: 'scale(1.3)',
+              }}
+            />
             
-            {/* Rotating ring */}
+            {/* Animated rotating gradient ring */}
             <motion.div
               className="absolute inset-0 rounded-full"
               style={{
-                background: 'conic-gradient(from 0deg, #00e6c8, #8b5cf6, #00e6c8)',
-                padding: '3px',
+                padding: '4px',
+                background: 'conic-gradient(from 0deg, #00e6c8, #8b5cf6, #ff6b9d, #00e6c8)',
               }}
               animate={{ rotate: 360 }}
-              transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
             >
-              <div className="w-full h-full rounded-full bg-midnight-900" />
+              <div className="w-full h-full rounded-full bg-[#1a1640]" />
             </motion.div>
 
-            {/* Avatar image container */}
+            {/* Avatar container with glassmorphism */}
             <motion.div
               ref={avatarRef}
-              className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden shadow-depth-lg border-4 border-white/5 opacity-0"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden opacity-0"
+              style={{
+                border: '4px solid rgba(0, 230, 200, 0.3)',
+                boxShadow: '0 0 60px rgba(0, 230, 200, 0.4), 0 0 100px rgba(139, 92, 246, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.05)',
+                background: 'rgba(255, 255, 255, 0.02)',
+                backdropFilter: 'blur(10px)',
+              }}
+              whileHover={{
+                scale: 1.05,
+                rotate: 5,
+                transition: { duration: 0.4, ease: 'easeOut' },
+              }}
             >
-              {/* Avatar image - replace with actual path */}
+              {/* Avatar image */}
               <img
                 src="/assets/gowtham-avatar.jpg"
                 alt="Gowtham - Software Developer"
                 className="w-full h-full object-cover"
+                style={{
+                  filter: 'contrast(1.1) brightness(1.05)',
+                }}
                 onError={(e) => {
-                  // Fallback to gradient + icon
                   e.target.style.display = 'none';
                   e.target.nextElementSibling.style.display = 'flex';
                 }}
               />
               
-              {/* Fallback placeholder */}
-              <div className="hidden w-full h-full flex-col items-center justify-center bg-gradient-to-br from-midnight-700 via-midnight-800 to-midnight-900">
-                <div className="text-9xl mb-4 filter drop-shadow-2xl">👨‍💻</div>
+              {/* Fallback */}
+              <div className="hidden w-full h-full flex-col items-center justify-center bg-gradient-to-br from-[#1a1640] via-[#2a2060] to-[#1a1640]">
+                <div className="text-9xl mb-4">👨‍💻</div>
                 <div className="font-brand text-white text-2xl font-bold">Gowtham</div>
-                <div className="font-light text-teal-400 text-sm tracking-wider mt-2">DEVELOPER</div>
               </div>
 
-              {/* Overlay gradient for depth */}
-              <div className="absolute inset-0 bg-gradient-to-t from-midnight-900/40 via-transparent to-transparent pointer-events-none" />
+              {/* Light reflection overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%, rgba(0, 230, 200, 0.1) 100%)',
+                  mixBlendMode: 'soft-light',
+                }}
+              />
+
+              {/* Bottom shadow gradient */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-1/3 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%)',
+                }}
+              />
             </motion.div>
 
-            {/* Floating achievement badges */}
+            {/* Floating badges */}
             <motion.div
-              className="absolute -top-6 -right-6 px-5 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-2xl shadow-teal-glow backdrop-blur-sm"
+              className="absolute -top-6 -right-6 px-5 py-3 rounded-2xl backdrop-blur-md font-bold text-sm text-white tracking-wider"
+              style={{
+                background: 'linear-gradient(135deg, #00e6c8 0%, #00b8a0 100%)',
+                boxShadow: '0 0 30px rgba(0, 230, 200, 0.6)',
+              }}
               animate={{ y: [0, -12, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <div className="font-brand text-white text-sm font-bold tracking-wider">4+ YEARS</div>
+              4+ YEARS
             </motion.div>
 
             <motion.div
-              className="absolute -bottom-6 -left-6 px-5 py-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl shadow-violet-glow backdrop-blur-sm"
+              className="absolute -bottom-6 -left-6 px-5 py-3 rounded-2xl backdrop-blur-md font-bold text-sm text-white tracking-wider"
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                boxShadow: '0 0 30px rgba(139, 92, 246, 0.6)',
+              }}
               animate={{ y: [0, -12, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
             >
-              <div className="font-brand text-white text-sm font-bold tracking-wider">FULL STACK</div>
+              FULL STACK
             </motion.div>
 
             <motion.div
-              className="absolute top-1/2 -right-10 w-14 h-14 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full shadow-lg flex items-center justify-center"
+              className="absolute top-1/2 -right-10 w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-md"
+              style={{
+                background: 'linear-gradient(135deg, #ff6b9d 0%, #ff3864 100%)',
+                boxShadow: '0 0 25px rgba(255, 107, 157, 0.6)',
+              }}
               animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             >
@@ -403,25 +506,43 @@ export default function Hero() {
           onClick={() => scrollToSection('#about')}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
+          transition={{ delay: 2.5 }}
         >
-          <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Scroll</span>
+          <span className="text-xs text-teal-400 uppercase tracking-widest font-medium">Scroll</span>
           <motion.div
-            className="w-6 h-10 border-2 border-teal-500/30 rounded-full flex justify-center p-2"
-            animate={{ borderColor: ['rgba(0, 230, 200, 0.3)', 'rgba(0, 230, 200, 0.6)', 'rgba(0, 230, 200, 0.3)'] }}
+            className="w-6 h-10 border-2 rounded-full flex justify-center p-2"
+            style={{
+              borderColor: 'rgba(0, 230, 200, 0.5)',
+              boxShadow: '0 0 15px rgba(0, 230, 200, 0.3)',
+            }}
+            animate={{
+              borderColor: [
+                'rgba(0, 230, 200, 0.3)',
+                'rgba(0, 230, 200, 0.8)',
+                'rgba(0, 230, 200, 0.3)',
+              ],
+            }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             <motion.div
               className="w-1.5 h-1.5 bg-teal-400 rounded-full"
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ boxShadow: '0 0 10px rgba(0, 230, 200, 0.8)' }}
             />
           </motion.div>
         </motion.div>
       )}
 
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-midnight-900 to-transparent pointer-events-none" />
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0f0c29] to-transparent pointer-events-none" />
+
+      <style jsx>{`
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
     </section>
   );
 }
